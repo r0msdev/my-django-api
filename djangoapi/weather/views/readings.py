@@ -7,7 +7,9 @@ from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
-from .models import WeatherReading
+from core.pagination import paginate_queryset, parse_pagination
+
+from ..models import WeatherReading
 
 
 def _reading_to_dict(reading):
@@ -29,15 +31,21 @@ def _parse_body(request):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class WeatherReadingListView(View):
-    """GET /weather/  – list all readings.
+    """GET /weather/  – list all readings (paginated).
     POST /weather/ – create a new reading."""
 
     def get(self, request):
+        page, page_size, err = parse_pagination(request)
+        if err:
+            return err
+
         readings = WeatherReading.objects.all()
         sensor_name = request.GET.get('sensorName')
         if sensor_name:
             readings = readings.filter(sensor_name=sensor_name)
-        return JsonResponse([_reading_to_dict(r) for r in readings], safe=False)
+
+        items, meta = paginate_queryset(readings, page, page_size)
+        return JsonResponse({'meta': meta, 'data': [_reading_to_dict(r) for r in items]})
 
     def post(self, request):
         body, err = _parse_body(request)
@@ -48,7 +56,7 @@ class WeatherReadingListView(View):
         missing = required - set(body.keys())
         if missing:
             return JsonResponse(
-                {'error': f'Missing required fields: {", ".join(sorted(missing))}.'},
+                {'error': f'Missing required fields: {', '.join(sorted(missing))}.'},
                 status=400,
             )
 

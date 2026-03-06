@@ -4,7 +4,7 @@ import uuid
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from .models import WeatherReading
+from ..models import WeatherReading
 
 DATA_INFO = {
     'Temperature': 3.8,
@@ -30,38 +30,75 @@ class WeatherReadingListGetTests(TestCase):
         self.client = Client()
         self.url = reverse('weather:reading-list')
 
+    def _get_data(self, params=None):
+        return json.loads(self.client.get(self.url, params or {}).content)
+
     def test_empty_list(self):
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(json.loads(response.content), [])
+        body = json.loads(response.content)
+        self.assertEqual(body['data'], [])
+        self.assertEqual(body['meta']['total'], 0)
 
     def test_returns_all_readings(self):
         _make_reading()
         _make_reading(sensor_date='2026-02-15T22:00:00+00:00')
-        response = self.client.get(self.url)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(json.loads(response.content)), 2)
+        body = self._get_data()
+        self.assertEqual(body['meta']['total'], 2)
+        self.assertEqual(len(body['data']), 2)
 
     def test_filter_by_sensor_name_match(self):
         _make_reading(sensor_name='aemet-zaorejas')
         _make_reading(sensor_name='aemet-madrid')
-        response = self.client.get(self.url, {'sensorName': 'aemet-zaorejas'})
-        data = json.loads(response.content)
-        self.assertEqual(len(data), 1)
-        self.assertEqual(data[0]['sensorName'], 'aemet-zaorejas')
+        body = self._get_data({'sensorName': 'aemet-zaorejas'})
+        self.assertEqual(body['meta']['total'], 1)
+        self.assertEqual(body['data'][0]['sensorName'], 'aemet-zaorejas')
 
     def test_filter_by_sensor_name_no_match(self):
         _make_reading(sensor_name='aemet-zaorejas')
-        response = self.client.get(self.url, {'sensorName': 'aemet-unknown'})
-        self.assertEqual(json.loads(response.content), [])
+        body = self._get_data({'sensorName': 'aemet-unknown'})
+        self.assertEqual(body['data'], [])
+        self.assertEqual(body['meta']['total'], 0)
 
     def test_response_shape(self):
         reading = _make_reading()
-        data = json.loads(self.client.get(self.url).content)[0]
-        self.assertEqual(data['id'], str(reading.id))
-        self.assertEqual(data['sensorName'], reading.sensor_name)
-        self.assertIn('sensorDate', data)
-        self.assertEqual(data['dataInfo'], DATA_INFO)
+        body = self._get_data()
+        self.assertIn('meta', body)
+        self.assertIn('data', body)
+        item = body['data'][0]
+        self.assertEqual(item['id'], str(reading.id))
+        self.assertEqual(item['sensorName'], reading.sensor_name)
+        self.assertIn('sensorDate', item)
+        self.assertEqual(item['dataInfo'], DATA_INFO)
+
+    def test_meta_fields_present(self):
+        _make_reading()
+        meta = self._get_data()['meta']
+        for field in ('total', 'page', 'pageSize', 'totalPages'):
+            self.assertIn(field, meta)
+
+    def test_pagination_page_size(self):
+        for i in range(5):
+            _make_reading(sensor_date=f'2026-02-{10 + i:02d}T00:00:00+00:00')
+        body = self._get_data({'pageSize': 2})
+        self.assertEqual(len(body['data']), 2)
+        self.assertEqual(body['meta']['total'], 5)
+        self.assertEqual(body['meta']['totalPages'], 3)
+
+    def test_pagination_second_page(self):
+        for i in range(4):
+            _make_reading(sensor_date=f'2026-02-{10 + i:02d}T00:00:00+00:00')
+        body = self._get_data({'pageSize': 2, 'page': 2})
+        self.assertEqual(len(body['data']), 2)
+        self.assertEqual(body['meta']['page'], 2)
+
+    def test_invalid_page_returns_400(self):
+        response = self.client.get(self.url, {'page': 'abc'})
+        self.assertEqual(response.status_code, 400)
+
+    def test_invalid_page_size_returns_400(self):
+        response = self.client.get(self.url, {'pageSize': 'abc'})
+        self.assertEqual(response.status_code, 400)
 
 
 class WeatherReadingListPostTests(TestCase):
@@ -150,4 +187,3 @@ class WeatherReadingDetailGetTests(TestCase):
         url = reverse('weather:reading-detail', kwargs={'pk': uuid.uuid4()})
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
-
