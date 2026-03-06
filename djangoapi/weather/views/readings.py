@@ -3,12 +3,13 @@ import logging
 import uuid
 
 from django.core.exceptions import ValidationError
-from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
+from core.errors import error_response
 from core.pagination import paginate_queryset, parse_pagination
+from core.responses import success_response
 
 from ..models import WeatherReading
 
@@ -29,7 +30,7 @@ def _parse_body(request):
     try:
         return json.loads(request.body), None
     except json.JSONDecodeError:
-        return None, JsonResponse({'error': 'Invalid JSON body.'}, status=400)
+        return None, error_response('Invalid JSON body.')
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -60,13 +61,10 @@ class WeatherReadingListView(View):
         required = {'sensorName', 'sensorDate', 'dataInfo'}
         missing = required - set(body.keys())
         if missing:
-            return JsonResponse(
-                {'error': f'Missing required fields: {', '.join(sorted(missing))}.'},
-                status=400,
-            )
+            return error_response(f'Missing required fields: {", ".join(sorted(missing))}.')
 
         if not isinstance(body['dataInfo'], dict):
-            return JsonResponse({'error': 'dataInfo must be a JSON object.'}, status=400)
+            return error_response('dataInfo must be a JSON object.')
 
         reading = WeatherReading(
             sensor_name=body['sensorName'],
@@ -78,12 +76,12 @@ class WeatherReadingListView(View):
             try:
                 reading.id = uuid.UUID(str(body['id']))
             except (ValueError, AttributeError):
-                return JsonResponse({'error': 'id must be a valid UUID.'}, status=400)
+                return error_response('id must be a valid UUID.')
 
         try:
             reading.full_clean()
         except ValidationError as exc:
-            return JsonResponse({'error': exc.message_dict}, status=400)
+            return error_response(exc.message_dict)
 
         reading.save()
         logger.info('Created WeatherReading id=%s sensor=%s', reading.id, reading.sensor_name)
@@ -99,6 +97,6 @@ class WeatherReadingDetailView(View):
             reading = WeatherReading.objects.get(pk=pk)
         except WeatherReading.DoesNotExist:
             logger.warning('WeatherReading not found: pk=%s', pk)
-            return JsonResponse({'error': 'Not found.'}, status=404)
+            return error_response('Not found.', status=404)
 
         return JsonResponse(_reading_to_dict(reading))

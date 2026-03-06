@@ -21,3 +21,9 @@ urlpatterns = [
     path("weather/", include("weather.urls")),
     path('admin/', admin.site.urls),
 ]
+
+# Global JSON error handlers
+handler400 = 'core.errors.handler400'
+handler403 = 'core.errors.handler403'
+handler404 = 'core.errors.handler404'
+handler500 = 'core.errors.handler500'

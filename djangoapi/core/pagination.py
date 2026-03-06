@@ -1,6 +1,6 @@
 import math
 
-from django.http import JsonResponse
+from .errors import error_response
 
 PAGE_SIZE_DEFAULT = 20
 PAGE_SIZE_MAX = 100
@@ -12,14 +12,14 @@ def parse_pagination(request):
     try:
         page = max(1, int(request.GET.get('page', 1)))
     except ValueError:
-        return None, None, JsonResponse({'error': 'page must be a positive integer.'}, status=400)
+        return None, None, error_response('page must be a positive integer.')
     try:
         page_size = min(
             PAGE_SIZE_MAX,
             max(1, int(request.GET.get('pageSize', PAGE_SIZE_DEFAULT))),
         )
     except ValueError:
-        return None, None, JsonResponse({'error': 'pageSize must be a positive integer.'}, status=400)
+        return None, None, error_response('pageSize must be a positive integer.')
     return page, page_size, None
 
 
