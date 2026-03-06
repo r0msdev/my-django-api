@@ -1,4 +1,5 @@
 import json
+import logging
 import uuid
 
 from django.core.exceptions import ValidationError
@@ -10,6 +11,8 @@ from django.views.decorators.csrf import csrf_exempt
 from core.pagination import paginate_queryset, parse_pagination
 
 from ..models import WeatherReading
+
+logger = logging.getLogger('weather')
 
 
 def _reading_to_dict(reading):
@@ -43,8 +46,10 @@ class WeatherReadingListView(View):
         sensor_name = request.GET.get('sensorName')
         if sensor_name:
             readings = readings.filter(sensor_name=sensor_name)
+            logger.debug('Filtering readings by sensorName=%s', sensor_name)
 
         items, meta = paginate_queryset(readings, page, page_size)
+        logger.debug('GET readings list — page=%s page_size=%s total=%s', page, page_size, meta['total'])
         return JsonResponse({'meta': meta, 'data': [_reading_to_dict(r) for r in items]})
 
     def post(self, request):
@@ -81,6 +86,7 @@ class WeatherReadingListView(View):
             return JsonResponse({'error': exc.message_dict}, status=400)
 
         reading.save()
+        logger.info('Created WeatherReading id=%s sensor=%s', reading.id, reading.sensor_name)
         return JsonResponse(_reading_to_dict(reading), status=201)
 
 
@@ -92,6 +98,7 @@ class WeatherReadingDetailView(View):
         try:
             reading = WeatherReading.objects.get(pk=pk)
         except WeatherReading.DoesNotExist:
+            logger.warning('WeatherReading not found: pk=%s', pk)
             return JsonResponse({'error': 'Not found.'}, status=404)
 
         return JsonResponse(_reading_to_dict(reading))
