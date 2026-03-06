@@ -1,5 +1,3 @@
-from django.shortcuts import render
-
 import json
 import uuid
 
@@ -36,6 +34,9 @@ class WeatherReadingListView(View):
 
     def get(self, request):
         readings = WeatherReading.objects.all()
+        sensor_name = request.GET.get('sensorName')
+        if sensor_name:
+            readings = readings.filter(sensor_name=sensor_name)
         return JsonResponse([_reading_to_dict(r) for r in readings], safe=False)
 
     def post(self, request):
