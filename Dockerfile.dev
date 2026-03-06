@@ -1,0 +1,22 @@
+# Development image — hot reload, no multi-stage
+FROM python:3.14-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    DJANGO_SETTINGS_MODULE=app.settings.dev
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Source is mounted as a volume at runtime (see docker-compose.dev.yml)
+# so we only copy here for standalone docker build usage
+COPY djangoapi/ .
+
+RUN mkdir -p logs
+
+EXPOSE 8000
+
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]

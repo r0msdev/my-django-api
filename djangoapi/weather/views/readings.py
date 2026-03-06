@@ -3,13 +3,13 @@ import logging
 import uuid
 
 from django.core.exceptions import ValidationError
+from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
 from core.errors import error_response
 from core.pagination import paginate_queryset, parse_pagination
-from core.responses import success_response
 
 from ..models import WeatherReading
 

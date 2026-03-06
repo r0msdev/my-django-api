@@ -1,0 +1,38 @@
+services:
+
+  # ── Development ─────────────────────────────────────────────────────────────
+  web-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    profiles: [dev]
+    volumes:
+      # Hot-reload: mount source so code changes reflect immediately
+      - ./djangoapi:/app
+    ports:
+      - "8000:8000"
+    environment:
+      DJANGO_SETTINGS_MODULE: app.settings.dev
+    env_file:
+      - .env
+    command: python manage.py runserver 0.0.0.0:8000
+
+  # ── Production ──────────────────────────────────────────────────────────────
+  web-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    profiles: [prod]
+    ports:
+      - "8000:8000"
+    environment:
+      DJANGO_SETTINGS_MODULE: app.settings.prod
+    env_file:
+      - .env
+    restart: unless-stopped
+    command: >
+      python -m gunicorn app.wsgi:application
+      --bind 0.0.0.0:8000
+      --workers 2
+      --timeout 60
+      --access-logfile -

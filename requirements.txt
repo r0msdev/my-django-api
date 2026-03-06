@@ -2,8 +2,10 @@ asgiref==3.11.1
 astroid==4.0.4
 dill==0.4.1
 Django==6.0.3
+gunicorn==25.1.0
 isort==8.0.1
 mccabe==0.7.0
+packaging==26.0
 platformdirs==4.9.4
 pylint==4.0.5
 pylint-django==2.7.0
