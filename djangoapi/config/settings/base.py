@@ -3,16 +3,22 @@ Base Django settings — shared across all environments.
 Do not run directly; import from dev.py or prod.py.
 """
 
-import os
 from pathlib import Path
+
+import environ
+
+env = environ.Env()
+
+# Load .env file if present (no-op if missing)
+environ.Env.read_env(Path(__file__).resolve().parent.parent.parent.parent / '.env')
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+SECRET_KEY = env('DJANGO_SECRET_KEY', default=None)
 
 DEBUG = False
 
-ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', '').split(',') if os.environ.get('DJANGO_ALLOWED_HOSTS') else []
+ALLOWED_HOSTS = env.list('DJANGO_ALLOWED_HOSTS', default=[])
 
 INSTALLED_APPS = [
     'django.contrib.admin',

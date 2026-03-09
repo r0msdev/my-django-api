@@ -1,11 +1,13 @@
 """Production settings."""
 
-import os
+import environ
 
 from .base import *  # noqa: F401, F403  # pylint: disable=wildcard-import,unused-wildcard-import
 
+env = environ.Env()
+
 # SECRET_KEY must be set via environment — no fallback in prod
-if not os.environ.get('DJANGO_SECRET_KEY'):
+if not env('DJANGO_SECRET_KEY', default=None):
     raise RuntimeError('DJANGO_SECRET_KEY environment variable is not set.')
 
 DEBUG = False
