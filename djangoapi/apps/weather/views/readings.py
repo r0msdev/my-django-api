@@ -2,8 +2,8 @@ import logging
 
 from rest_framework.generics import ListCreateAPIView, RetrieveAPIView
 
-from weather.serializers import WeatherReadingSerializer
-from weather.services import readings as service
+from apps.weather.serializers import WeatherReadingSerializer
+from apps.weather.services import readings as service
 
 logger = logging.getLogger('weather')
 

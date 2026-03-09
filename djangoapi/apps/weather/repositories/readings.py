@@ -1,4 +1,4 @@
-from weather.models import WeatherReading
+from apps.weather.models import WeatherReading
 
 
 def list_readings(sensor_name=None):

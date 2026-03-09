@@ -33,11 +33,11 @@ lint: ## Run pylint over the project
 
 .PHONY: test
 test: ## Run all tests
-	$(MANAGE) test core weather --verbosity=2
+	$(MANAGE) test core apps --verbosity=2
 
 .PHONY: test-fast
 test-fast: ## Run all tests (minimal output)
-	$(MANAGE) test core weather
+	$(MANAGE) test core apps
 
 # ── Database ──────────────────────────────────────────────────────────────────
 
