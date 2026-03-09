@@ -12,17 +12,17 @@ def error_response(message, status=400):
 
 # ── Global error handlers (wired in app/urls.py) ─────────────────────────────
 
-def handler400(request, exception=None):
+def handler400(request, exception=None):  # pylint: disable=unused-argument
     logger.warning('400 Bad Request: %s', request.path)
     return error_response('Bad request.', status=400)
 
 
-def handler403(request, exception=None):
+def handler403(request, exception=None):  # pylint: disable=unused-argument
     logger.warning('403 Forbidden: %s', request.path)
     return error_response('Forbidden.', status=403)
 
 
-def handler404(request, exception=None):
+def handler404(request, exception=None):  # pylint: disable=unused-argument
     logger.warning('404 Not Found: %s', request.path)
     return error_response('Not found.', status=404)
 

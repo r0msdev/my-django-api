@@ -2,7 +2,7 @@
 
 import os
 
-from .base import *  # noqa: F401, F403
+from .base import *  # noqa: F401, F403  # pylint: disable=wildcard-import,unused-wildcard-import
 
 # SECRET_KEY must be set via environment — no fallback in prod
 if not os.environ.get('DJANGO_SECRET_KEY'):

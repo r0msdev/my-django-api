@@ -1,6 +1,6 @@
 """Development settings — never use in production."""
 
-from .base import *  # noqa: F401, F403
+from .base import *  # noqa: F401, F403  # pylint: disable=wildcard-import,unused-wildcard-import
 
 SECRET_KEY = 'django-insecure-^cu^g41$5euelcb(27bi(lseo#kbaw8yf8ruw$#dtuk_++1=j^'
 
