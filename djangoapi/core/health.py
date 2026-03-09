@@ -11,7 +11,7 @@ def index(request):
     return JsonResponse({
         'endpoints': {
             'health': '/health/',
-            'weather': '/weather/readings/',
+            'weather': '/api/v1/weather/readings/',
         }
     })
 
