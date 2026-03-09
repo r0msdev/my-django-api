@@ -4,9 +4,9 @@ FROM python:3.14-slim AS builder
 
 WORKDIR /build
 
-COPY requirements.txt .
+COPY requirements/prod.txt requirements/
 RUN pip install --upgrade pip && \
-    pip install --no-cache-dir --prefix=/install -r requirements.txt
+    pip install --no-cache-dir --prefix=/install -r requirements/prod.txt
 
 
 # Stage 2: lean runtime image
@@ -14,7 +14,7 @@ FROM python:3.14-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    DJANGO_SETTINGS_MODULE=app.settings.prod
+    DJANGO_SETTINGS_MODULE=config.settings.prod
 
 WORKDIR /app
 
@@ -37,7 +37,7 @@ RUN python manage.py collectstatic --noinput
 
 EXPOSE 8000
 
-CMD ["python", "-m", "gunicorn", "app.wsgi:application", \
+CMD ["python", "-m", "gunicorn", "config.wsgi:application", \
      "--bind", "0.0.0.0:8000", \
      "--workers", "2", \
      "--timeout", "60", \

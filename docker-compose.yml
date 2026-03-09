@@ -12,7 +12,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DJANGO_SETTINGS_MODULE: app.settings.dev
+      DJANGO_SETTINGS_MODULE: config.settings.dev
     env_file:
       - .env
     command: python manage.py runserver 0.0.0.0:8000
@@ -26,12 +26,12 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DJANGO_SETTINGS_MODULE: app.settings.prod
+      DJANGO_SETTINGS_MODULE: config.settings.prod
     env_file:
       - .env
     restart: unless-stopped
     command: >
-      python -m gunicorn app.wsgi:application
+      python -m gunicorn config.wsgi:application
       --bind 0.0.0.0:8000
       --workers 2
       --timeout 60
