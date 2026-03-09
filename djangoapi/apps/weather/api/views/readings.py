@@ -2,7 +2,7 @@ import logging
 
 from rest_framework.generics import ListCreateAPIView, RetrieveAPIView
 
-from apps.weather.serializers import WeatherReadingSerializer
+from apps.weather.api.serializers import WeatherReadingSerializer
 from apps.weather.services import readings as service
 
 logger = logging.getLogger('weather')

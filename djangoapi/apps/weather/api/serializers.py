@@ -2,7 +2,7 @@ import uuid
 
 from rest_framework import serializers
 
-from .models import WeatherReading
+from apps.weather.domain.models import WeatherReading
 
 
 class WeatherReadingSerializer(serializers.ModelSerializer):

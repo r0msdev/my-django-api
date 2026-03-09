@@ -3,7 +3,7 @@ import uuid
 from django.urls import reverse
 from rest_framework.test import APIClient, APITestCase
 
-from ..models import WeatherReading
+from ..domain.models import WeatherReading
 
 DATA_INFO = {
     'Temperature': 3.8,

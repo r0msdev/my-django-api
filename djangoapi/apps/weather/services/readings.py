@@ -1,6 +1,6 @@
 import logging
 
-from apps.weather.repositories import readings as repo
+from apps.weather.domain.repositories import readings as repo
 
 logger = logging.getLogger('weather')
 

@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import WeatherReading
+from .domain.models import WeatherReading
 
 
 @admin.register(WeatherReading)
