@@ -16,7 +16,9 @@ DEBUG = False
 SECURE_HSTS_SECONDS = 31536000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
-SECURE_SSL_REDIRECT = True
+# SSL redirect must be handled by the upstream proxy/load balancer, not Django.
+# Enabling this when running behind a plain HTTP reverse proxy causes redirect loops.
+SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 X_FRAME_OPTIONS = 'DENY'

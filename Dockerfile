@@ -4,9 +4,9 @@ FROM python:3.14-slim AS builder
 
 WORKDIR /build
 
-COPY requirements/prod.txt requirements/
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir --prefix=/install -r requirements/prod.txt
+COPY requirements/ requirements/
+RUN pip install --upgrade pip --root-user-action=ignore && \
+    pip install --no-cache-dir --prefix=/install --root-user-action=ignore -r requirements/prod.txt
 
 
 # Stage 2: lean runtime image
@@ -32,13 +32,13 @@ RUN addgroup --system appgroup && \
 
 USER appuser
 
-# Collect static files
-RUN python manage.py collectstatic --noinput
-
 EXPOSE 8000
 
-CMD ["python", "-m", "gunicorn", "config.wsgi:application", \
-     "--bind", "0.0.0.0:8000", \
-     "--workers", "2", \
-     "--timeout", "60", \
-     "--access-logfile", "-"]
+CMD python manage.py collectstatic --noinput && \
+    python -m gunicorn config.wsgi:application \
+        --bind 0.0.0.0:8000 \
+        --workers 2 \
+        --worker-class gthread \
+        --threads 4 \
+        --timeout 120 \
+        --access-logfile -
